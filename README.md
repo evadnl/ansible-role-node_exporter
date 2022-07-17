@@ -1,5 +1,5 @@
 
-# Ansible-Role-node-exporter
+# Ansible-Role-node_exporter
 
 This Ansible Role will install the Prometheus' node_exporter as a systemd service on your Linux host(s).
 
@@ -36,7 +36,7 @@ node_exporter comes with extra options when installing, to make more metric coll
 
     firewalld_present: false
 
-If you run firewalld as your firewall then you can use this to open up port `9100` through this.
+If you run firewalld as your firewall then you can change this to `True` open up port `9100` through this.
 
 ## Example Playbook
 
