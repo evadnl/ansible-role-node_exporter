@@ -32,7 +32,7 @@ The location where you place the node_exporter binary.
 
     node_exporter_collectors: ""
 
-node_exporter comes with extra options when installing, to make more metric collectors available. More information can be found in the original repository [here}(https://github.com/prometheus/node_exporter#collectors).
+node_exporter comes with extra options when installing, to make more metric collectors available. More information can be found in the original repository [here](https://github.com/prometheus/node_exporter#collectors).
 
     firewalld_present: false
 
