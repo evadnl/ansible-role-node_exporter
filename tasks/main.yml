@@ -1,0 +1,60 @@
+---
+  - name: Create node_exporter group to run the process as.
+    ansible.builtin.group:
+      name: node_exporter
+      state: present
+
+  - name: Create node_exporter user to run the process as.
+    ansible.builtin.user:
+      name: node_exporter
+      group: node_exporter
+      shell: /sbin/nologin
+      create_home: no
+      state: present
+
+  - name: Download latest version of the Prometheus Node_exporter.
+    ansible.builtin.get_url:
+      url: "{{ node_exporter_download_url }}"
+      dest: "~/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
+      mode: 0755
+      checksum: "{{ node_exporter_sha256_checksum }}"
+
+  - name: Extract Node_exporter.
+    ansible.builtin.unarchive:
+      src: "~/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
+      dest: "/tmp"
+      remote_src: yes
+
+  - name: Move Node_exporter file to /usr/local/bin/.
+    ansible.builtin.copy:
+      src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}/node_exporter"
+      dest: "{{ node_exporter_bin_path }}"
+      owner: node_exporter
+      group: node_exporter
+      mode: 0755
+      remote_src: yes
+    
+  - name: Create the systemd service file.
+    ansible.builtin.template:
+      src: "node_exporter.service.j2"
+      dest: "/etc/systemd/system/node_exporter.service"
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Make sure node_exporter is started and enabled.
+    ansible.builtin.systemd:
+      daemon_reload: yes
+      service: node_exporter
+      state: started
+      enabled: yes
+
+  - name: Allow 9100/tcp through firewall.
+    ansible.posix.firewalld:
+      port: 9100/tcp
+      state: enabled
+      permanent: yes    
+    notify: reload_firewalld
+    when: firewalld_present | bool
+
+    
