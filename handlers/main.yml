@@ -2,3 +2,8 @@
     ansible.builtin.systemd:
       name: firewalld
       state: restarted
+
+  - name: restart_node_exporter
+    ansible.builtin.systemd:
+      name: node_exporter
+      state: restarted

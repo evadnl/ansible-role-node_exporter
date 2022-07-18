@@ -1,4 +1,19 @@
 ---
+  - name: Check current version of Node_exporter.
+    ansible.builtin.command: "{{ node_exporter_bin_path }} --version"
+    changed_when: false
+    failed_when: false
+    register: node_exporter_current_version
+
+  - name: Download latest version of the Prometheus Node_exporter and unpack in /tmp.
+    ansible.builtin.unarchive:
+      src: "{{ node_exporter_download_url }}"
+      dest: "/tmp"
+      mode: 0755
+      remote_src: true
+    when: node_exporter_version not in node_exporter_current_version.stdout or node_exporter_current_version.std is not defined
+    register: node_exporter_download_version
+
   - name: Create node_exporter group to run the process as.
     ansible.builtin.group:
       name: node_exporter
@@ -12,19 +27,6 @@
       create_home: no
       state: present
 
-  - name: Download latest version of the Prometheus Node_exporter.
-    ansible.builtin.get_url:
-      url: "{{ node_exporter_download_url }}"
-      dest: "~/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
-      mode: 0755
-      checksum: "{{ node_exporter_sha256_checksum }}"
-
-  - name: Extract Node_exporter.
-    ansible.builtin.unarchive:
-      src: "~/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}.tar.gz"
-      dest: "/tmp"
-      remote_src: yes
-
   - name: Move Node_exporter file to /usr/local/bin/.
     ansible.builtin.copy:
       src: "/tmp/node_exporter-{{ node_exporter_version }}.linux-{{ node_exporter_arch }}/node_exporter"
@@ -33,7 +35,9 @@
       group: node_exporter
       mode: 0755
       remote_src: yes
-    
+    notify: restart_node_exporter
+    when: node_exporter_download_version is changed
+
   - name: Create the systemd service file.
     ansible.builtin.template:
       src: "node_exporter.service.j2"
@@ -53,8 +57,6 @@
     ansible.posix.firewalld:
       port: 9100/tcp
       state: enabled
-      permanent: yes    
+      permanent: yes
     notify: reload_firewalld
     when: firewalld_present | bool
-
-    
