@@ -22,9 +22,6 @@ The version of node_exporter to install.
 
 Replace the `node_exporter_arch` with the processor archetype your going to run the node_exporter on.
 
-    node_exporter_sha256_checksum: sha256:68f3802c2dd3980667e4ba65ea2e1fb03f4a4ba026cca375f15a0390ff850949
-
-The `node_exporter_sha256_checksum` can be obtained for the [releases page](https://github.com/prometheus/node_exporter/releases), and downloading the `sha256sums.txt` file from the version you are installing. Keep the `sha256:` in front of the string you obtain out of that file.
 
     node_exporter_bin_path: "/usr/local/bin/node_exporter"
 
